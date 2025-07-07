@@ -1,30 +1,25 @@
 import os
-import asyncio
 import gspread
-from dotenv import load_dotenv
 from telegram import Update, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove, InlineKeyboardMarkup, InlineKeyboardButton
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes, ConversationHandler
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ConversationHandler, ContextTypes, filters
 from oauth2client.service_account import ServiceAccountCredentials
-
-# تحميل المتغيرات البيئية
-load_dotenv()
 
 # إعداد Google Sheets
 SCOPE = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 CREDS = ServiceAccountCredentials.from_json_keyfile_name("/etc/secrets/credentials.json", SCOPE)
 client = gspread.authorize(CREDS)
 
-# إعداد أسماء الشيت
+# إعداد أسماء الشيتات
 SHEET_NAME = "NahjAcademySheet"
 SHEET_MALE = "الذكور"
 SHEET_FEMALE = "الاناث"
 sheet_male = client.open(SHEET_NAME).worksheet(SHEET_MALE)
 sheet_female = client.open(SHEET_NAME).worksheet(SHEET_FEMALE)
 
-# مراحل المحادثة
+# مراحل التسجيل
 NAME, AGE, GOAL, COUNTRY, GENDER = range(5)
 
-# دالة /start
+# البداية
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     await update.message.reply_text(
@@ -54,15 +49,16 @@ async def about(update: Update, context: ContextTypes.DEFAULT_TYPE):
 - متابعة دورية وتقييم شامل
 - مستويات متعددة تناسب الجميع
 
-🎥 شاهد الفيديو التعريفي التالي لتفهم أكثر عن طريقة العمل 👇
-""",
+🎥 شاهد الفيديو التعريفي التالي لتفهم أكثر عن طريقة العمل 👇""",
         parse_mode='Markdown'
     )
+
     await update.message.reply_video(
         video="BAACAgQAAxkBAANuaGP96sXyixrepVEce63yIUgLgFUAAhYXAAJB9yFTByDjFUfgZMI2BA",
         caption="🎞 *الفيديو التعريفي لأكاديمية نهج*",
         parse_mode="Markdown"
     )
+
     keyboard = InlineKeyboardMarkup([
         [InlineKeyboardButton("📢 القناة الرسمية", url="https://t.me/+aE8i5fu47nQxOTZk")]
     ])
@@ -106,10 +102,7 @@ async def get_gender(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text("✅ تم التسجيل بنجاح!", reply_markup=ReplyKeyboardRemove())
 
-    keyboard = [
-        [KeyboardButton("من نحن")],
-        [KeyboardButton("التسجيل")]
-    ]
+    keyboard = [[KeyboardButton("من نحن")], [KeyboardButton("التسجيل")]]
     await update.message.reply_text("⬅️ يمكنك الآن العودة للتعرف أكثر على الأكاديمية أو تسجيل شخص آخر.", reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True))
 
     channel_button = InlineKeyboardMarkup([
@@ -124,7 +117,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("❌ تم إلغاء العملية.", reply_markup=ReplyKeyboardRemove())
     return ConversationHandler.END
 
-# تشغيل البوت
+# التشغيل
 async def main():
     app = ApplicationBuilder().token(os.environ['TOKEN']).build()
 
@@ -135,9 +128,9 @@ async def main():
             AGE: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_age)],
             GOAL: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_goal)],
             COUNTRY: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_country)],
-            GENDER: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_gender)]
+            GENDER: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_gender)],
         },
-        fallbacks=[CommandHandler("cancel", cancel)]
+        fallbacks=[CommandHandler("cancel", cancel)],
     )
 
     app.add_handler(CommandHandler("start", start))
@@ -147,6 +140,6 @@ async def main():
     print("🤖 البوت يعمل الآن...")
     await app.run_polling()
 
-# نقطة التشغيل
-if __name__ == '__main__':
+if __name__ == "__main__":
+    import asyncio
     asyncio.run(main())
