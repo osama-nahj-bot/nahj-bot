@@ -13,7 +13,7 @@ load_dotenv()
 
 # إعداد Google Sheets
 SCOPE = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-CREDS = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", SCOPE)
+CREDS =ServiceAccountCredentials.from_json_keyfile_name("/etc/secrets/credentials.json", scope)
 client = gspread.authorize(CREDS)
 
 # اسم الشيت وصفحتين للذكور والإناث
