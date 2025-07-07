@@ -17,7 +17,7 @@ client = gspread.authorize(CREDS)
 # إعداد أسماء الشيت
 SHEET_NAME = "NahjAcademySheet"
 SHEET_MALE = "الذكور"
-SHEET_FEMALE = "الإناث"
+SHEET_FEMALE = "الاناث"
 sheet_male = client.open(SHEET_NAME).worksheet(SHEET_MALE)
 sheet_female = client.open(SHEET_NAME).worksheet(SHEET_FEMALE)
 
