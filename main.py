@@ -13,7 +13,7 @@ load_dotenv()
 
 # إعداد Google Sheets
 SCOPE = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-CREDS =ServiceAccountCredentials.from_json_keyfile_name("/etc/secrets/credentials.json", scope)
+CREDS = ServiceAccountCredentials.from_json_keyfile_name("/etc/secrets/credentials.json", SCOPE)
 client = gspread.authorize(CREDS)
 
 # اسم الشيت وصفحتين للذكور والإناث
@@ -61,19 +61,16 @@ async def about(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode='Markdown'
     )
 
-    # إرسال الفيديو باستخدام file_id
     await update.message.reply_video(
         video="BAACAgQAAxkBAANuaGP96sXyixrepVEce63yIUgLgFUAAhYXAAJB9yFTByDjFUfgZMI2BA",
         caption="🎞 *الفيديو التعريفي لأكاديمية نهج*",
         parse_mode="Markdown"
     )
 
-    # إرسال زر القناة الرسمية
     keyboard = InlineKeyboardMarkup([
         [InlineKeyboardButton("📢 القناة الرسمية", url="https://t.me/+aE8i5fu47nQxOTZk")]
     ])
     await update.message.reply_text("⬅️ انضم إلى قناتنا الرسمية:", reply_markup=keyboard)
-
 
 # بدء التسجيل
 async def register(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -113,14 +110,12 @@ async def get_gender(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text("✅ تم التسجيل بنجاح!", reply_markup=ReplyKeyboardRemove())
 
-    # عرض خيارات إضافية بعد التسجيل
     keyboard = [
         [KeyboardButton("من نحن")],
         [KeyboardButton("التسجيل")]
     ]
     await update.message.reply_text("⬅️ يمكنك الآن العودة للتعرف أكثر على الأكاديمية أو تسجيل شخص آخر.", reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True))
 
-    # زر الانضمام للقناة الرسمية (Inline)
     channel_button = InlineKeyboardMarkup([
         [InlineKeyboardButton("📢 القناة الرسمية", url="https://t.me/+aE8i5fu47nQxOTZk")]
     ])
@@ -156,7 +151,6 @@ async def main():
     print("🤖 البوت يعمل الآن...")
     await app.run_polling()
 
-# تشغيل متوافق مع Replit
 if __name__ == '__main__':
     nest_asyncio.apply()
     asyncio.get_event_loop().run_until_complete(main())
