@@ -1,11 +1,12 @@
+# main.py
+
 import os
 import asyncio
 import gspread
 import nest_asyncio
 from dotenv import load_dotenv
 from telegram import Update, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove, InlineKeyboardMarkup, InlineKeyboardButton
-from telegram.ext import (ApplicationBuilder, ContextTypes, CommandHandler,
-                          MessageHandler, filters, ConversationHandler)
+from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters, ConversationHandler
 from oauth2client.service_account import ServiceAccountCredentials
 
 # تحميل المتغيرات البيئية
@@ -13,7 +14,7 @@ load_dotenv()
 
 # إعداد Google Sheets
 SCOPE = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-CREDS = ServiceAccountCredentials.from_json_keyfile_name("/etc/secrets/credentials.json", SCOPE)
+CREDS = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", SCOPE)
 client = gspread.authorize(CREDS)
 
 # اسم الشيت وصفحتين للذكور والإناث
@@ -23,48 +24,44 @@ SHEET_FEMALE = "الاناث"
 sheet_male = client.open(SHEET_NAME).worksheet(SHEET_MALE)
 sheet_female = client.open(SHEET_NAME).worksheet(SHEET_FEMALE)
 
-# تعريف المراحل
+# تعريف مراحل المحادثة
 NAME, AGE, GOAL, COUNTRY, GENDER = range(5)
 
 # دالة البداية
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     await update.message.reply_text(
-        f"""🎉 أهلاً وسهلاً بك في *أكاديمية نهج* لتحفيظ وتعليم القرآن الكريم عن بُعد، {user.first_name}!
+        f"""🎉 أهلاً وسهلاً بك في *أكاديمية نهج*، {user.first_name}!
 
 📌 *قبل أن تبدأ التسجيل، يُرجى اتباع الخطوات التالية:*
+1. 🔹 اضغط على زر *من نحن* لتتعرف على رؤيتنا وطريقة التعليم.
+2. ▶️ شاهد الفيديو الترحيبي القصير.
+3. 📝 بعد ذلك، اضغط على *التسجيل* لتسجيل بياناتك.
 
-1. 🔹 اضغط على زر *من نحن* لتتعرف على رؤيتنا ورسالتنا، وطريقة التعليم والمتابعة.
-2. ▶️ شاهد الفيديو الترحيبي القصير لتأخذ فكرة واضحة عن البرنامج والمستويات والخدمات المقدمة.
-3. 📝 بعد ذلك، توجه إلى زر *التسجيل* لإدخال معلوماتك والالتحاق بالأكاديمية.
-
-📚 *نسأل الله أن يبارك لك في هذا السعي المبارك، وأن يجعل القرآن الكريم ربيع قلبك ونور صدرك 🌿*""",
+📚 *نسأل الله أن يبارك لك في هذا السعي المبارك* 🌿
+""",
         parse_mode='Markdown'
     )
     keyboard = [[KeyboardButton("من نحن")], [KeyboardButton("التسجيل")]]
-    await update.message.reply_text("اختر من القائمة:", reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True))
+    await update.message.reply_text("⬇️ اختر من القائمة:", reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True))
 
 # من نحن
 async def about(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         """📖 *عن أكاديمية نهج:*
+نحن أكاديمية لتحفيظ القرآن الكريم عن بُعد بإشراف معلمين ومعلمات مؤهلين.
 
-نحن أكاديمية متخصصة في تحفيظ وتعليم القرآن الكريم عن بُعد، بإشراف نخبة من المعلمين والمعلمات.
-
-🔹 نُقدّم برنامجًا متكاملًا يشمل:
+🔹 يشمل البرنامج:
 - حلقات فردية وجماعية
-- متابعة دورية وتقييم شامل
-- مستويات متعددة تناسب الجميع
+- تقييم دوري
+- مستويات تناسب جميع الأعمار
 
-🎥 شاهد الفيديو التعريفي التالي لتفهم أكثر عن طريقة العمل 👇
-""",
-        parse_mode='Markdown'
-    )
+🎥 شاهد الفيديو التعريفي:👇
+""", parse_mode='Markdown')
 
     await update.message.reply_video(
         video="BAACAgQAAxkBAANuaGP96sXyixrepVEce63yIUgLgFUAAhYXAAJB9yFTByDjFUfgZMI2BA",
-        caption="🎞 *الفيديو التعريفي لأكاديمية نهج*",
-        parse_mode="Markdown"
+        caption="🎞 *الفيديو التعريفي لأكاديمية نهج*", parse_mode="Markdown"
     )
 
     keyboard = InlineKeyboardMarkup([
@@ -72,7 +69,7 @@ async def about(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ])
     await update.message.reply_text("⬅️ انضم إلى قناتنا الرسمية:", reply_markup=keyboard)
 
-# بدء التسجيل
+# التسجيل
 async def register(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("👤 ما اسمك الكامل؟", reply_markup=ReplyKeyboardRemove())
     return NAME
@@ -110,16 +107,8 @@ async def get_gender(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text("✅ تم التسجيل بنجاح!", reply_markup=ReplyKeyboardRemove())
 
-    keyboard = [
-        [KeyboardButton("من نحن")],
-        [KeyboardButton("التسجيل")]
-    ]
-    await update.message.reply_text("⬅️ يمكنك الآن العودة للتعرف أكثر على الأكاديمية أو تسجيل شخص آخر.", reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True))
-
-    channel_button = InlineKeyboardMarkup([
-        [InlineKeyboardButton("📢 القناة الرسمية", url="https://t.me/+aE8i5fu47nQxOTZk")]
-    ])
-    await update.message.reply_text("⬅️ انضم إلى قناتنا الرسمية:", reply_markup=channel_button)
+    keyboard = [[KeyboardButton("من نحن")], [KeyboardButton("التسجيل")]]
+    await update.message.reply_text("⬅️ اختر من الخيارات التالية:", reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True))
 
     return ConversationHandler.END
 
@@ -139,9 +128,9 @@ async def main():
             AGE: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_age)],
             GOAL: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_goal)],
             COUNTRY: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_country)],
-            GENDER: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_gender)]
+            GENDER: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_gender)],
         },
-        fallbacks=[CommandHandler("cancel", cancel)]
+        fallbacks=[CommandHandler("cancel", cancel)],
     )
 
     app.add_handler(CommandHandler("start", start))
@@ -153,4 +142,4 @@ async def main():
 
 if __name__ == '__main__':
     nest_asyncio.apply()
-    asyncio.get_event_loop().run_until_complete(main())
+    asyncio.run(main())
