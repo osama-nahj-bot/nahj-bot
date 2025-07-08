@@ -38,7 +38,7 @@ NAME, AGE, GOAL, COUNTRY, GENDER = range(5)
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     await update.message.reply_text(
-        f"""🎉 أهلاً وسهلاً بك في *أكاديمية نهج*، {user.first_name}!
+        f"""🎉 أهلاً وسهلاً بك في أكاديمية نهج، {user.first_name}!
 
 📌 قبل أن تبدأ، يُرجى الضغط على "من نحن" لمعلومات شاملة أو على "التسجيل" للبدء مباشرة.
 """, parse_mode='Markdown')
@@ -47,7 +47,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def about(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        """📖 *عن أكاديمية نهج:*
+        """📖 عن أكاديمية نهج:
 
 نحن أكاديمية متخصصة في تحفيظ وتعليم القرآن الكريم عن بُعد.
 
@@ -129,6 +129,5 @@ async def main():
     print("✅ البوت يعمل الآن على Render...")
     await app.run_polling()
 
-if __name__ == "__main__":
+if _name_ == "_main_":
     asyncio.run(main())
-
