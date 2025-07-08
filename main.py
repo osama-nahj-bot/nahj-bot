@@ -141,5 +141,6 @@ async def main():
     print("✅ البوت يعمل الآن على Render...")
     await app.run_polling()
 
-if _name_ == "_main_":
+if __name__ == "__main__":
+
     asyncio.run(main())
