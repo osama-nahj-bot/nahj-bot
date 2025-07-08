@@ -12,10 +12,6 @@ from telegram.ext import (
     ContextTypes,
     ConversationHandler,
 )
-import nest_asyncio
-
-# تفعيل التوافق مع asyncio في Render
-nest_asyncio.apply()
 
 # تحميل المتغيرات البيئية
 load_dotenv()
@@ -93,6 +89,12 @@ async def get_gender(update: Update, context: ContextTypes.DEFAULT_TYPE):
     gender = update.message.text
     data = context.user_data
     
+    # التحقق من صحة الجنس المدخل
+    if gender not in ["ذَكر", "أنثى"]:
+        keyboard = [[KeyboardButton("ذَكر"), KeyboardButton("أنثى")]]
+        await update.message.reply_text("⚠️ يرجى اختيار الجنس من الأزرار المتاحة:", reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True))
+        return GENDER
+    
     # إضافة معرف المستخدم والتاريخ
     user_id = update.effective_user.id
     username = update.effective_user.username or "لا يوجد"
@@ -119,28 +121,37 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("❌ تم إلغاء العملية.", reply_markup=ReplyKeyboardRemove())
     return ConversationHandler.END
 
-async def main():
-    app = ApplicationBuilder().token(os.environ["TOKEN"]).build()
+def main():
+    # إعداد حلقة الأحداث
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    
+    try:
+        app = ApplicationBuilder().token(os.environ["TOKEN"]).build()
 
-    conv_handler = ConversationHandler(
-        entry_points=[MessageHandler(filters.Regex("^التسجيل$"), register)],
-        states={
-            NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_name)],
-            AGE: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_age)],
-            GOAL: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_goal)],
-            COUNTRY: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_country)],
-            GENDER: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_gender)],
-        },
-        fallbacks=[CommandHandler("cancel", cancel)],
-    )
+        conv_handler = ConversationHandler(
+            entry_points=[MessageHandler(filters.Regex("^التسجيل$"), register)],
+            states={
+                NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_name)],
+                AGE: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_age)],
+                GOAL: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_goal)],
+                COUNTRY: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_country)],
+                GENDER: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_gender)],
+            },
+            fallbacks=[CommandHandler("cancel", cancel)],
+        )
 
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(MessageHandler(filters.Regex("^من نحن$"), about))
-    app.add_handler(conv_handler)
+        app.add_handler(CommandHandler("start", start))
+        app.add_handler(MessageHandler(filters.Regex("^من نحن$"), about))
+        app.add_handler(conv_handler)
 
-    print("✅ البوت يعمل الآن على Render...")
-    await app.run_polling()
+        print("✅ البوت يعمل الآن على Render...")
+        loop.run_until_complete(app.run_polling())
+        
+    except KeyboardInterrupt:
+        print("🛑 تم إيقاف البوت...")
+    finally:
+        loop.close()
 
 if __name__ == "__main__":
-
-    asyncio.run(main())
+    main()
