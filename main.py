@@ -5,7 +5,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 from dotenv import load_dotenv
 from telegram import Update, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import (
-    ApplicationBuilder,
+    Application,
     CommandHandler,
     MessageHandler,
     filters,
@@ -121,37 +121,32 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("❌ تم إلغاء العملية.", reply_markup=ReplyKeyboardRemove())
     return ConversationHandler.END
 
-def main():
-    # إعداد حلقة الأحداث
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
+async def main():
+    # إنشاء التطبيق
+    app = Application.builder().token(os.environ["TOKEN"]).build()
+
+    # إعداد معالج المحادثة
+    conv_handler = ConversationHandler(
+        entry_points=[MessageHandler(filters.Regex("^التسجيل$"), register)],
+        states={
+            NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_name)],
+            AGE: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_age)],
+            GOAL: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_goal)],
+            COUNTRY: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_country)],
+            GENDER: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_gender)],
+        },
+        fallbacks=[CommandHandler("cancel", cancel)],
+    )
+
+    # إضافة المعالجات
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(MessageHandler(filters.Regex("^من نحن$"), about))
+    app.add_handler(conv_handler)
+
+    print("✅ البوت يعمل الآن على Render...")
     
-    try:
-        app = ApplicationBuilder().token(os.environ["TOKEN"]).build()
+    # تشغيل البوت
+    await app.run_polling(drop_pending_updates=True)
 
-        conv_handler = ConversationHandler(
-            entry_points=[MessageHandler(filters.Regex("^التسجيل$"), register)],
-            states={
-                NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_name)],
-                AGE: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_age)],
-                GOAL: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_goal)],
-                COUNTRY: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_country)],
-                GENDER: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_gender)],
-            },
-            fallbacks=[CommandHandler("cancel", cancel)],
-        )
-
-        app.add_handler(CommandHandler("start", start))
-        app.add_handler(MessageHandler(filters.Regex("^من نحن$"), about))
-        app.add_handler(conv_handler)
-
-        print("✅ البوت يعمل الآن على Render...")
-        loop.run_until_complete(app.run_polling())
-        
-    except KeyboardInterrupt:
-        print("🛑 تم إيقاف البوت...")
-    finally:
-        loop.close()
-
-if __name__ == "__main__":
-    main()
+if _name_ == "_main_":
+    asyncio.run(main())
