@@ -92,13 +92,25 @@ async def get_country(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def get_gender(update: Update, context: ContextTypes.DEFAULT_TYPE):
     gender = update.message.text
     data = context.user_data
-    row = [data["name"], data["age"], data["goal"], data["country"], gender]
-    if gender == "ذَكر":
-        sheet_male.append_row(row)
-    else:
-        sheet_female.append_row(row)
-
-    await update.message.reply_text("✅ تم التسجيل بنجاح!", reply_markup=ReplyKeyboardRemove())
+    
+    # إضافة معرف المستخدم والتاريخ
+    user_id = update.effective_user.id
+    username = update.effective_user.username or "لا يوجد"
+    
+    try:
+        row = [data["name"], data["age"], data["goal"], data["country"], gender, user_id, username]
+        
+        if gender == "ذَكر":
+            sheet_male.append_row(row)
+        else:
+            sheet_female.append_row(row)
+            
+        await update.message.reply_text("✅ تم التسجيل بنجاح!", reply_markup=ReplyKeyboardRemove())
+        
+    except Exception as e:
+        await update.message.reply_text("❌ حدث خطأ أثناء التسجيل. يرجى المحاولة مرة أخرى.", reply_markup=ReplyKeyboardRemove())
+        print(f"Error saving to sheet: {e}")
+    
     keyboard = [[KeyboardButton("من نحن")], [KeyboardButton("التسجيل")]]
     await update.message.reply_text("⬅️ يمكنك الآن العودة للتعرف على الأكاديمية أو تسجيل شخص آخر.", reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True))
     return ConversationHandler.END
