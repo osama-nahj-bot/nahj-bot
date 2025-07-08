@@ -148,5 +148,5 @@ async def main():
     # تشغيل البوت
     await app.run_polling(drop_pending_updates=True)
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     asyncio.run(main())
